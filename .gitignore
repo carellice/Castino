@@ -1,0 +1,11 @@
+bin/
+obj/
+dist/
+*.user
+.vs/
+*.pfx
+*.cer
+*.log
+.env
+.env.*
+tmp/

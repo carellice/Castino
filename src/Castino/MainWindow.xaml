@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="Castino.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:android="using:Castino.Android"
+    Title="Castino">
+
+    <Window.SystemBackdrop>
+        <MicaBackdrop />
+    </Window.SystemBackdrop>
+
+    <Grid x:Name="RootGrid">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="SidebarColumn" Width="340" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- ============ Sidebar ============ -->
+        <Grid x:Name="Sidebar" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Padding="20,16,20,20" Spacing="14">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="Castino" Style="{StaticResource TitleTextBlockStyle}" />
+                    <TextBlock Text="Il tuo telefono sul PC, senza fili" Opacity="0.7" Style="{StaticResource CaptionTextBlockStyle}" />
+                </StackPanel>
+
+                <SelectorBar x:Name="PlatformSelector" SelectionChanged="PlatformSelector_SelectionChanged">
+                    <SelectorBarItem x:Name="AndroidTab" Text="Android" IsSelected="True" />
+                    <SelectorBarItem x:Name="AppleTab" Text="iPhone / iPad" />
+                </SelectorBar>
+
+                <!-- ===== Android ===== -->
+                <StackPanel x:Name="AndroidPanel" Spacing="14">
+                    <Grid>
+                        <TextBlock Text="Dispositivi" Style="{StaticResource BodyStrongTextBlockStyle}" VerticalAlignment="Center" />
+                        <Button HorizontalAlignment="Right" Click="Refresh_Click" ToolTipService.ToolTip="Aggiorna elenco"
+                                Padding="8,4" Background="Transparent" BorderThickness="0">
+                            <FontIcon Glyph="&#xE72C;" FontSize="14" />
+                        </Button>
+                    </Grid>
+
+                    <ListView x:Name="DevicesList" SelectionMode="Single" MinHeight="56" MaxHeight="200"
+                              BorderThickness="1" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                              Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" CornerRadius="6"
+                              SelectionChanged="DevicesList_SelectionChanged">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="android:AdbDevice">
+                                <StackPanel Padding="0,6">
+                                    <TextBlock Text="{x:Bind DisplayName}" />
+                                    <TextBlock Text="{x:Bind Detail}" Opacity="0.65" Style="{StaticResource CaptionTextBlockStyle}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                    <TextBlock x:Name="NoDevicesText" Opacity="0.65" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
+                               Text="Nessun dispositivo. Collegalo via Wi-Fi qui sotto, oppure una volta col cavo USB e poi premi «Passa al Wi-Fi»." />
+                    <Button x:Name="EnableWifiButton" Content="Passa al Wi-Fi (dispositivo USB selezionato)" HorizontalAlignment="Stretch"
+                            Click="EnableWifi_Click" IsEnabled="False" />
+
+                    <Button HorizontalAlignment="Stretch" Click="PairQr_Click" Padding="12,8">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xED14;" FontSize="16" />
+                            <TextBlock Text="Associa nuovo telefono con QR code" />
+                        </StackPanel>
+                    </Button>
+
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="Connetti via Wi-Fi" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                        <Grid ColumnSpacing="8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <AutoSuggestBox x:Name="AddressBox" PlaceholderText="192.168.1.20:5555"
+                                            QuerySubmitted="AddressBox_QuerySubmitted" GotFocus="AddressBox_GotFocus" />
+                            <Button Grid.Column="1" Content="Connetti" Click="Connect_Click" />
+                        </Grid>
+                        <HyperlinkButton Content="Cerca telefoni in rete (Debug wireless)" Padding="0" Click="Discover_Click" />
+                    </StackPanel>
+
+                    <Expander Header="Associa con codice numerico" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <StackPanel Spacing="8">
+                            <TextBlock TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.8"
+                                       Text="Android 11 o successivo. Sul telefono: Impostazioni › Opzioni sviluppatore › Debug wireless › «Associa dispositivo con codice di associazione». Inserisci l'indirizzo e il codice mostrati." />
+                            <TextBox x:Name="PairAddressBox" Header="Indirizzo e porta di associazione" PlaceholderText="192.168.1.20:37123" />
+                            <TextBox x:Name="PairCodeBox" Header="Codice di associazione" PlaceholderText="123456" />
+                            <TextBox x:Name="PairConnectBox" Header="Indirizzo e porta di connessione (schermata Debug wireless)" PlaceholderText="192.168.1.20:41235" />
+                            <Button Content="Associa e connetti" Click="Pair_Click" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="Qualità e latenza" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <StackPanel Spacing="10">
+                            <ComboBox x:Name="ResolutionCombo" Header="Risoluzione massima" HorizontalAlignment="Stretch" />
+                            <ComboBox x:Name="FpsCombo" Header="Fotogrammi al secondo" HorizontalAlignment="Stretch" />
+                            <Slider x:Name="BitrateSlider" Header="Bitrate (Mbit/s)" Minimum="2" Maximum="32" StepFrequency="1"
+                                    TickFrequency="2" TickPlacement="Outside" />
+                            <TextBlock TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.7"
+                                       Text="Per la latenza più bassa: Wi-Fi a 5 GHz, risoluzione 1280–1600 e 8–12 Mbit/s." />
+                        </StackPanel>
+                    </Expander>
+
+                    <Expander Header="Mouse e tastiera" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                        <StackPanel Spacing="10">
+                            <ToggleSwitch x:Name="SmoothScrollToggle" Header="Rotellina come scorrimento col dito"
+                                          OnContent="Attivo (consigliato)" OffContent="Disattivato: rotellina Android"
+                                          Toggled="ScrollSettings_Changed" />
+                            <ComboBox x:Name="ScrollSpeedCombo" Header="Velocità di scorrimento" HorizontalAlignment="Stretch"
+                                      SelectionChanged="ScrollSettings_Changed" />
+                            <TextBlock TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" Opacity="0.8" LineHeight="20">
+                                <Run FontWeight="SemiBold">Clic</Run> tocca · <Run FontWeight="SemiBold">trascina</Run> scorre<LineBreak />
+                                <Run FontWeight="SemiBold">Tasto destro / Esc</Run> indietro · <Run FontWeight="SemiBold">tasto centrale</Run> home<LineBreak />
+                                <Run FontWeight="SemiBold">Rotellina</Run> scorre · <Run FontWeight="SemiBold">Maiusc + rotellina</Run> in orizzontale<LineBreak />
+                                <Run FontWeight="SemiBold">Ctrl + rotellina</Run> zoom (pizzico)<LineBreak />
+                                <Run FontWeight="SemiBold">Alt+H</Run> home · <Run FontWeight="SemiBold">Alt+S</Run> app recenti · <Run FontWeight="SemiBold">Alt+N</Run> notifiche<LineBreak />
+                                <Run FontWeight="SemiBold">Alt+↑/↓</Run> volume · <Run FontWeight="SemiBold">Alt+R</Run> ruota · <Run FontWeight="SemiBold">Alt+P</Run> accensione<LineBreak />
+                                <Run FontWeight="SemiBold">Ctrl+V</Run> incolla gli appunti del PC · <Run FontWeight="SemiBold">F11</Run> schermo intero
+                            </TextBlock>
+                        </StackPanel>
+                    </Expander>
+
+                    <ToggleSwitch x:Name="ScreenOffToggle" Header="Spegni lo schermo del telefono durante il mirroring"
+                                  Toggled="ScreenOffToggle_Toggled" />
+                </StackPanel>
+
+                <!-- ===== iOS ===== -->
+                <StackPanel x:Name="ApplePanel" Spacing="12" Visibility="Collapsed">
+                    <InfoBar IsOpen="True" IsClosable="False" Severity="Informational" Title="In arrivo"
+                             Message="Il mirroring di iPhone e iPad sarà aggiunto in una prossima versione. Apple non consente di comandare l'iPhone da un computer: sarà possibile solo visualizzarne lo schermo." />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+            <!-- Always-visible footer: status and the main action. -->
+            <StackPanel Grid.Row="1" Padding="20,8,20,16" Spacing="10">
+                <InfoBar x:Name="StatusBar" IsClosable="True" />
+                <Button x:Name="StartButton" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch"
+                        Click="Start_Click" IsEnabled="False" Padding="12,10">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon x:Name="StartIcon" Glyph="&#xE768;" FontSize="14" />
+                        <TextBlock x:Name="StartText" Text="Avvia mirroring" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- ============ Video area ============ -->
+        <Grid Grid.Column="1" Margin="0,8,8,8" CornerRadius="8" Background="Black">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <ContentControl x:Name="VideoHost" IsTabStop="True" UseSystemFocusVisuals="False"
+                            HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                            PointerPressed="Video_PointerPressed" PointerMoved="Video_PointerMoved"
+                            PointerReleased="Video_PointerReleased" PointerCanceled="Video_PointerReleased"
+                            PointerCaptureLost="Video_PointerReleased" PointerWheelChanged="Video_PointerWheelChanged"
+                            PreviewKeyDown="Video_PreviewKeyDown" CharacterReceived="Video_CharacterReceived">
+                <Grid>
+                    <SwapChainPanel x:Name="VideoPanel" Loaded="VideoPanel_Loaded" SizeChanged="VideoPanel_SizeChanged"
+                                    CompositionScaleChanged="VideoPanel_CompositionScaleChanged" />
+                    <StackPanel x:Name="Placeholder" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12"
+                                IsHitTestVisible="False">
+                        <FontIcon Glyph="&#xE8EA;" FontSize="56" Foreground="#80FFFFFF" />
+                        <TextBlock x:Name="PlaceholderText" Foreground="#B0FFFFFF" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="360"
+                                   Text="Seleziona un telefono e premi «Avvia mirroring»." />
+                        <ProgressRing x:Name="ConnectingRing" IsActive="False" Foreground="White" />
+                    </StackPanel>
+                </Grid>
+            </ContentControl>
+
+            <!-- Navigation bar (Android) -->
+            <StackPanel x:Name="NavBar" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="2" Padding="6"
+                        Background="#20FFFFFF" IsHitTestVisible="False" Opacity="0.4">
+                <StackPanel.Resources>
+                    <Style TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderThickness" Value="0" />
+                        <Setter Property="Foreground" Value="White" />
+                        <Setter Property="Padding" Value="12,8" />
+                        <!-- Keep keyboard focus on the phone screen after clicking a button. -->
+                        <Setter Property="AllowFocusOnInteraction" Value="False" />
+                    </Style>
+                </StackPanel.Resources>
+                <Button Click="Nav_Back" ToolTipService.ToolTip="Indietro (Esc o tasto destro)"><FontIcon Glyph="&#xE72B;" FontSize="16" /></Button>
+                <Button Click="Nav_Home" ToolTipService.ToolTip="Home (tasto centrale)"><FontIcon Glyph="&#xE80F;" FontSize="16" /></Button>
+                <Button Click="Nav_Recents" ToolTipService.ToolTip="App recenti"><FontIcon Glyph="&#xE8A9;" FontSize="16" /></Button>
+                <AppBarSeparator Foreground="#60FFFFFF" />
+                <Button Click="Nav_Notifications" ToolTipService.ToolTip="Notifiche"><FontIcon Glyph="&#xEA8F;" FontSize="16" /></Button>
+                <Button Click="Nav_VolumeDown" ToolTipService.ToolTip="Volume -"><FontIcon Glyph="&#xE993;" FontSize="16" /></Button>
+                <Button Click="Nav_VolumeUp" ToolTipService.ToolTip="Volume +"><FontIcon Glyph="&#xE995;" FontSize="16" /></Button>
+                <Button Click="Nav_Rotate" ToolTipService.ToolTip="Ruota"><FontIcon Glyph="&#xE7AD;" FontSize="16" /></Button>
+                <Button Click="Nav_Power" ToolTipService.ToolTip="Accensione / blocco"><FontIcon Glyph="&#xE7E8;" FontSize="16" /></Button>
+                <AppBarSeparator Foreground="#60FFFFFF" />
+                <Button Click="Nav_Fullscreen" ToolTipService.ToolTip="Schermo intero (F11)"><FontIcon Glyph="&#xE740;" FontSize="16" /></Button>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
