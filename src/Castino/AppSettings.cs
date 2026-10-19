@@ -13,6 +13,7 @@ public sealed class AppSettings
     public int BitRateMbps { get; set; } = 8;
     public bool TurnScreenOff { get; set; }
     public bool SmoothScroll { get; set; } = true;
+    public bool CheckForUpdatesAutomatically { get; set; } = true;
     /// <summary>0 = lenta, 1 = normale, 2 = veloce.</summary>
     public int ScrollSpeed { get; set; } = 1;
     public List<string> RecentAddresses { get; set; } = new();

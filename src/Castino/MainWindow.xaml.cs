@@ -88,6 +88,7 @@ public sealed partial class MainWindow : Window
             }
         };
         Closed += MainWindow_Closed;
+        InitializeUpdates();
 
         if (_adb != null)
             _ = RefreshDevicesAsync();
@@ -821,6 +822,7 @@ public sealed partial class MainWindow : Window
 
     private async void MainWindow_Closed(object sender, WindowEventArgs args)
     {
+        StopUpdates();
         SaveQualitySettings();
         IMirrorSession? session = _session;
         _session = null;

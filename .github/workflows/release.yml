@@ -13,10 +13,16 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
+      - name: Test updater
+        shell: pwsh
+        run: |
+          dotnet run --project tests/Castino.UpdateTests -c Release
+          if ($LASTEXITCODE -ne 0) { throw 'Updater tests failed.' }
+          ./tests/Test-UpdateInstaller.ps1
       - name: Build portable ZIP
         shell: pwsh
         run: |
-          $version = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}'.TrimStart('v') } else { '0.1.0' }
+          $version = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}'.TrimStart('v') } else { '' }
           ./scripts/New-Release.ps1 -Version $version
       - uses: actions/upload-artifact@v4
         with:
@@ -30,10 +36,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release view '${{ github.ref_name }}' *> $null
-          if ($LASTEXITCODE -ne 0) {
-            gh release create '${{ github.ref_name }}' --title 'Castino ${{ github.ref_name }}' --generate-notes
+          $draft = gh release view '${{ github.ref_name }}' --json isDraft --jq .isDraft 2>$null
+          $exists = $LASTEXITCODE -eq 0
+          if ($exists -and $draft -eq 'false') {
+            Write-Output 'Release already published; leaving its verified assets unchanged.'
+            exit 0
+          }
+          if (-not $exists) {
+            gh release create '${{ github.ref_name }}' --title 'Castino ${{ github.ref_name }}' --generate-notes --draft
             if ($LASTEXITCODE -ne 0) { throw 'Release creation failed.' }
           }
           gh release upload '${{ github.ref_name }}' dist/*.zip dist/SHA256SUMS.txt --clobber
           if ($LASTEXITCODE -ne 0) { throw 'Release upload failed.' }
+          gh release edit '${{ github.ref_name }}' --draft=false --latest
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed.' }

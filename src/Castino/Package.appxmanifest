@@ -13,7 +13,7 @@
   <Identity
     Name="Castino"
     Publisher="CN=Castino"
-    Version="0.1.0.0" />
+    Version="0.1.1.0" />
 
   <Properties>
     <DisplayName>Castino</DisplayName>

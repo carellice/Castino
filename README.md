@@ -14,7 +14,7 @@ Mostra lo schermo di Android sul computer e permette di controllarlo con mouse, 
 ## Scarica e avvia
 
 1. Apri **[l'ultima release](https://github.com/carellice/Castino/releases/latest)**.
-2. Scarica **`Castino-0.1.0-win-x64.zip`** dalla sezione **Assets** (nelle release successive, scegli lo ZIP della nuova versione).
+2. Scarica **`Castino-0.1.1-win-x64.zip`** dalla sezione **Assets** (nelle release successive, scegli lo ZIP della nuova versione).
 3. Estrai **tutto** lo ZIP in una cartella e apri **`Castino.exe`**.
 
 Non occorre installare .NET o Visual Studio: il pacchetto include i runtime necessari, ADB e scrcpy-server.
@@ -28,8 +28,29 @@ La build non è firmata digitalmente: Windows potrebbe mostrare un avviso di rep
 La release include `SHA256SUMS.txt` per verificare l'integrità del download:
 
 ```powershell
-Get-FileHash .\Castino-0.1.0-win-x64.zip -Algorithm SHA256
+Get-FileHash .\Castino-0.1.1-win-x64.zip -Algorithm SHA256
 ```
+
+## Aggiornamenti dall'app
+
+Dalla versione **0.1.1**, Castino controlla le release stabili di questa repository all'avvio e ogni 6 ore
+mentre resta aperto. Nel pannello **Aggiornamenti** puoi disattivare il controllo automatico o premere
+**Cerca aggiornamenti** in qualsiasi momento. Il controllo usa l'API pubblica di GitHub, senza account o token.
+Se manca la rete, l'app continua a funzionare; un controllo manuale mostra l'eventuale errore.
+
+Quando è disponibile una versione più recente, l'app mostra **Scarica aggiornamento**. Il download avviene
+in background, può essere annullato e viene verificato con SHA-256 prima dell'estrazione.
+Premi quindi **Installa e riavvia**: Castino chiude il mirroring, aggiorna i file e si riapre.
+Le impostazioni e gli indirizzi salvati in `%LOCALAPPDATA%\Castino` vengono conservati.
+
+L'aggiornamento richiede una cartella scrivibile dall'utente e supporta il pacchetto ZIP Windows x64.
+Le installazioni MSIX devono essere aggiornate dal proprio canale di distribuzione.
+L'aggiornatore conserva un backup dei file modificati nella propria cartella temporanea
+`%TEMP%\Castino-Update-*` e tenta il ripristino se la copia fallisce. Un eventuale errore viene mostrato
+e registrato in quella cartella. Chiudi eventuali altre istanze di Castino prima di installare.
+
+**Chi usa la 0.1.0 deve scaricare manualmente la 0.1.1 una volta**, per ricevere questa funzione.
+Da quel momento gli aggiornamenti successivi si gestiscono direttamente dall'app.
 
 ## Funzioni
 
@@ -83,13 +104,21 @@ L'eseguibile di sviluppo si trova in
 Per produrre lo ZIP autonomo e il checksum della release:
 
 ```powershell
-./scripts/New-Release.ps1 -Version 0.1.0
+./scripts/New-Release.ps1 -Version 0.1.1
 ```
 
 Lo script scrive in `dist/` e richiede una cartella di output non già presente.
 Il workflow GitHub Actions compila e pubblica una release quando viene caricato un tag `vX.Y.Z`;
 può anche essere avviato manualmente per ottenere un artefatto di compilazione.
 Le release pronte all'uso sono attualmente **solo x64**.
+Le release vengono pubblicate dopo il caricamento dello ZIP e del checksum, così l'app propone solo pacchetti completi.
+
+Test dell'aggiornatore (con risposte HTTP simulate, senza scaricare release):
+
+```powershell
+dotnet run --project tests/Castino.UpdateTests -c Release
+./tests/Test-UpdateInstaller.ps1
+```
 
 Per generare un MSIX destinato allo Store:
 
@@ -106,6 +135,7 @@ con quelli assegnati da Partner Center.
 - `Mirroring/`: interfaccia delle sessioni, scorrimento e sorgente video di test (Debug).
 - `Video/`: decoder H.264 Media Foundation e renderer Direct3D 11.
 - `MainWindow.xaml(.cs)`: interfaccia e inoltro dell'input.
+- `Updates/` e `MainWindow.Updates.cs`: controllo release GitHub, download verificato e aggiornamento con backup.
 - `tools/`: ADB e scrcpy-server 5.0.1, con i relativi avvisi di licenza.
 
 Castino avvia scrcpy-server sul telefono attraverso ADB e riceve video H.264 tramite un tunnel locale.

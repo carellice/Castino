@@ -7,7 +7,7 @@
     <AssemblyName>Castino</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\AppIcon.ico</ApplicationIcon>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Description>Android screen mirroring and control for Windows.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Platforms>x64;ARM64</Platforms>
@@ -34,6 +34,7 @@
     <Content Include="..\..\LICENSE" Link="LICENSE" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\tools\platform-tools\*" Link="tools\platform-tools\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="Updates\Install-Update.ps1" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

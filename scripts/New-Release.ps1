@@ -1,7 +1,8 @@
-param([string]$Version = '0.1.0')
+param([string]$Version = '')
 $ErrorActionPreference = 'Stop'
-if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw 'Version must use major.minor.patch.' }
 $root = Split-Path $PSScriptRoot -Parent
+if (-not $Version) { $Version = ([xml](Get-Content (Join-Path $root 'src/Castino/Castino.csproj') -Raw)).SelectSingleNode('/Project/PropertyGroup/Version').InnerText }
+if ($Version -notmatch '^\d+\.\d+\.\d+$') { throw 'Version must use major.minor.patch.' }
 $output = Join-Path $root "dist/Castino-$Version-win-x64"
 if (Test-Path $output) { throw "Output already exists: $output. Choose a new version or move the previous build." }
 dotnet publish (Join-Path $root 'src/Castino/Castino.csproj') -c Release -p:Platform=x64 -r win-x64 --self-contained true -p:PublishSingleFile=false "-p:Version=$Version" -o $output

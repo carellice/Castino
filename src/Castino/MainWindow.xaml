@@ -138,6 +138,21 @@
 
             <!-- Always-visible footer: status and the main action. -->
             <StackPanel Grid.Row="1" Padding="20,8,20,16" Spacing="10">
+                <Expander Header="Aggiornamenti" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                    <StackPanel Spacing="8">
+                        <TextBlock x:Name="VersionText" Style="{StaticResource CaptionTextBlockStyle}" />
+                        <CheckBox x:Name="AutoUpdatesCheck" Content="Controlla automaticamente" Checked="AutoUpdates_Changed" Unchecked="AutoUpdates_Changed" />
+                        <Button x:Name="CheckUpdatesButton" Content="Cerca aggiornamenti" Click="CheckUpdates_Click" HorizontalAlignment="Stretch" />
+                        <HyperlinkButton Content="Note delle release su GitHub" NavigateUri="https://github.com/carellice/Castino/releases" Padding="0" />
+                    </StackPanel>
+                </Expander>
+                <InfoBar x:Name="UpdateBar" IsClosable="True">
+                    <InfoBar.ActionButton>
+                        <Button x:Name="InstallUpdateButton" Content="Scarica aggiornamento" Click="InstallUpdate_Click" Visibility="Collapsed" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+                <ProgressBar x:Name="UpdateProgress" Minimum="0" Maximum="100" Visibility="Collapsed" />
+                <Button x:Name="CancelUpdateButton" Content="Annulla download" Click="CancelUpdate_Click" Visibility="Collapsed" />
                 <InfoBar x:Name="StatusBar" IsClosable="True" />
                 <Button x:Name="StartButton" Style="{StaticResource AccentButtonStyle}" HorizontalAlignment="Stretch"
                         Click="Start_Click" IsEnabled="False" Padding="12,10">
